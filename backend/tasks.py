@@ -3,20 +3,21 @@ from models import db, Task
 
 tasks_bp = Blueprint("tasks", __name__)
 
-@tasks_bp.route("/tasks", methods=["GET"])
-def get_tasks():
-    tasks = Task.query.all()
-    return jsonify({"tasks": [{"id": task.id, "name": task.name, "description": task.description, "status": task.status, "tags": task.tags} for task in tasks]})
-
-
-
 @tasks_bp.route("/tasks", methods=["POST"])
+def get_tasks():
+    data = request.get_json()
+    tasks = Task.query.filter_by(user_id=data['user_id']).all()
+    return jsonify({"tasks": [{"id": task.id, "name": task.name, "description": task.description, "status": task.status} for task in tasks]})
+
+
+
+@tasks_bp.route("/create_task", methods=["POST"])
 def create_task():
     data = request.get_json()
-    new_task = Task(name=data['name'], description=data.get('description',''), status=data['status'], tags=data['tags'])
+    new_task = Task(name=data['name'], description=data.get('description',''), status=data['status'], user_id=data['user_id'])
     db.session.add(new_task)
     db.session.commit()
-    return jsonify({'task': {'id': new_task.id, 'name': new_task.name, 'description':new_task.description, 'status':new_task.status, 'tags': new_task.tags}}), 201
+    return jsonify({'task': {'id': new_task.id, 'name': new_task.name, 'description':new_task.description, 'status':new_task.status}}), 201
 
 
 
@@ -33,11 +34,9 @@ def update_task(task_id):
         task.description = data['description']
     if "status" in data:
         task.status = data['status']
-    if "tags" in data:
-        task.tags = data['tags']
 
     db.session.commit()
-    return jsonify({"message": "Task updated successfully", "task": {"id": task.id, "name": task.name, "status": task.status, "description": task.description, "tags": task.tags}}), 200
+    return jsonify({"message": "Task updated successfully", "task": {"id": task.id, "name": task.name, "status": task.status, "description": task.description}}), 200
 
 
 
