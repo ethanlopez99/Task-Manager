@@ -1,52 +1,71 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import { Formik, Form, Field } from "formik";
+import axios from "axios";
 
 import Bucket from "./components/Bucket/bucket";
 
-const initialTasks = [
-  {
-    id: 1,
-    name: "Wash Dishes",
-    status: "Completed",
-    tags: [{ text: "High Priority", color: "red" }],
-    description: "Wash & dry dishes and cutlery",
-  },
-  {
-    id: 2,
-    name: "Clean Carpet",
-    status: "To Do",
-    tags: [
-      { text: "High Priority", color: "red" },
-      { text: "John's Task", color: "green" },
-    ],
-    description: "",
-  },
-];
-
 function App() {
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, setTasks] = useState([]);
 
-  const updateTask = (taskID, statusToChange, newStatus) => {
-    const updatedTasks = tasks.map((task) =>
-      task.id === taskID ? { ...task, [statusToChange]: newStatus } : task
-    );
-    setTasks(updatedTasks);
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  const fetchTasks = async () => {
+    try {
+      const response = await axios.get("http://127.0.0.1:5000/tasks");
+      setTasks(response.data.tasks);
+    } catch (error) {
+      console.error("Error fetching tasks: ", error.message);
+    }
   };
 
-  const removeTask = (taskID) => {
-    const filteredTasks = tasks.filter((task) => task.id !== taskID);
-    setTasks(filteredTasks);
+  const updateTask = async (taskID, statusToChange, newStatus) => {
+    const updatedFields = { [statusToChange]: newStatus };
+
+    try {
+      const response = await axios.patch(
+        `http://127.0.0.1:5000/tasks/${taskID}`,
+        updatedFields
+      );
+      console.log(response.data.message);
+      fetchTasks();
+    } catch (error) {
+      console.error("Error updating task: ", error.message);
+    }
   };
 
-  const addTask = ({ name, tags }) => {
+  const removeTask = async (taskID) => {
+    try {
+      const response = await axios.delete(
+        `http://127.0.0.1:5000/tasks/${taskID}`
+      );
+      console.log(response.data.message);
+      fetchTasks();
+    } catch (error) {
+      console.error("Error deleting task: ", error.message);
+    }
+  };
+
+  const addTask = async ({ name, description }) => {
     const new_task = {
-      id: tasks.length > 0 ? tasks[tasks.length - 1].id + 1 : 1,
       status: "To Do",
       name: name,
-      tags: tags.split(",").map((tag) => tag.trim()),
+      description: description,
+      // tags: tags.split(",").map((tag) => tag.trim()) // Ready for inclusion of tags
     };
-    setTasks([...tasks, new_task]);
+
+    try {
+      const response = await axios.post(
+        "http://127.0.0.1:5000/tasks",
+        new_task
+      );
+      fetchTasks();
+      console.log(response.data.message);
+    } catch (error) {
+      console.error("Error: ", error.message);
+    }
   };
 
   return (
@@ -64,14 +83,14 @@ function App() {
         updateTaskStatus={updateTask}
         removeTask={removeTask}
       />
-      <Formik initialValues={{ name: "", tags: "" }} onSubmit={addTask}>
+      <Formik initialValues={{ name: "", description: "" }} onSubmit={addTask}>
         <Form>
           <Field type="text" id="name" name="name" placeholder="Task Name" />
           <Field
             type="text"
-            id="tags"
-            name="tags"
-            placeholder="Tags (Optional)"
+            id="description"
+            name="description"
+            placeholder="Description (Optional)"
           />
           <button type="submit">Add Task</button>
         </Form>

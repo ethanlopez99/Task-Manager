@@ -29,9 +29,10 @@ const Task = ({ task, updateTask, removeTask }) => {
   return (
     <div className="task_container">
       <div className="task_tags">
-        {task.tags.map((tag) => (
+        {/* Line below is for tag functionality - to be configured on back end */}
+        {/* {task.tags.map((tag) => (
           <Tag tag={tag} />
-        ))}
+        ))} */}
         {isEditing ? (
           <>
             <input
