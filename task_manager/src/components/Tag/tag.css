@@ -1,0 +1,10 @@
+.tag_container {
+  width: auto;
+  display: inline-block;
+  padding: 0.4rem;
+  margin-right: 0.5rem;
+
+  border-radius: 10px;
+
+  font-size: 14px;
+}

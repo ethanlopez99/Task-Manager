@@ -1,0 +1,16 @@
+.task_container {
+  display: flex;
+  flex-direction: column;
+
+  padding: 1rem;
+
+  border: 1px solid grey;
+
+  width: 100%;
+}
+
+.task_tags {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
